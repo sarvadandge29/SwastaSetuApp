@@ -3,7 +3,7 @@ import React from 'react'
 
 const SelfDiagonosis = () => {
   return (
-    <View>
+    <View className="items-center justify-center flex-1">
       <Text>SelfDiagonosis</Text>
     </View>
   )

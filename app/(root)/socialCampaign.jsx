@@ -3,7 +3,7 @@ import React from 'react'
 
 const SocialCampaign = () => {
   return (
-    <View>
+    <View className="items-center justify-center flex-1">
       <Text>SocialCampaign</Text>
     </View>
   )

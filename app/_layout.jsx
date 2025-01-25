@@ -3,6 +3,7 @@ import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import '../global.css';
+import { UserProvider } from '../context/UserContext';
 
 const HomeLayout = () => {
     const [fontsLoaded, error] = useFonts({
@@ -31,16 +32,19 @@ const HomeLayout = () => {
 
     return (
         <>
-            <StatusBar
-                style="light"
-                backgroundColor="#22c55e"
-            />
-            <Stack>
-                <Stack.Screen name="index" options={{ headerShown: false }} />
-                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-                <Stack.Screen name="(admin)" options={{ headerShown: false }} />
-                <Stack.Screen name="(root)" options={{ headerShown: false }} />
-            </Stack>
+            <UserProvider>
+
+                <StatusBar
+                    style="light"
+                    backgroundColor="#22c55e"
+                />
+                <Stack>
+                    <Stack.Screen name="index" options={{ headerShown: false }} />
+                    <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                    <Stack.Screen name="(common)" options={{ headerShown: false }} />
+                    <Stack.Screen name="(root)" options={{ headerShown: false }} />
+                </Stack>
+            </UserProvider >
         </>
     );
 };
