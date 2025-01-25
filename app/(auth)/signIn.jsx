@@ -1,6 +1,7 @@
 import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
+import { supabase } from '../../utils/supabase/client';
 
 export default function SignIn() {
   const router = useRouter();
@@ -8,6 +9,23 @@ export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const handleSignIn = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        Alert.alert('Error', error.message);
+      } else {
+        Alert.alert('Success', 'You are signed in!');
+        router.push('/doctorPost');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
 
   return (
     <View className="p-6">
@@ -23,6 +41,7 @@ export default function SignIn() {
           placeholder="Email"
           className="p-3 border border-gray-300 rounded-lg mt-1 bg-white"
           onChangeText={(value) => setEmail(value)}
+          value={email}
         />
       </View>
 
@@ -34,13 +53,14 @@ export default function SignIn() {
           secureTextEntry={true}
           className="p-3 border border-gray-300 rounded-lg mt-1 bg-white"
           onChangeText={(value) => setPassword(value)}
+          value={password}
         />
       </View>
 
       {/* Login Button */}
       <TouchableOpacity
         className="p-4 bg-primary rounded-lg mt-8"
-        // onPress={OnSignInClick}
+        onPress={handleSignIn}
       >
         <Text className="text-sm text-white text-center">Login</Text>
       </TouchableOpacity>
