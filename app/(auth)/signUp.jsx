@@ -1,16 +1,21 @@
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
+import { supabase } from '../../utils/supabase/client';
 
-export default function signUp() {
+export default function SignUp() {
   const router = useRouter();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [location, setLocation] = useState({ latitude: null, longitude: null });
+  const [city, setCity] = useState('Noida');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const handleGetLocation = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -24,20 +29,89 @@ export default function signUp() {
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
     });
-    Alert.alert('Location fetched successfully!');
+
+    try {
+      const cityName = await reverseGeocode(location.latitude, location.longitude);
+      setCity(cityName);
+      Alert.alert('Location fetched successfully!');
+    } catch (err) {
+      Alert.alert('Unable to fetch city name. Please try again.');
+    }
   };
 
-  // const handlesignUp = () => {
-  //   if (!username || !email || !phone || !password || !location.latitude || !location.longitude) {
-  //     Alert.alert('Please fill all fields and fetch your location');
-  //     return;
-  //   }
+  const reverseGeocode = async (latitude, longitude) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+      );
+      const data = await response.json();
 
-  //   // Handle sign-up logic here (e.g., API call to register user)
-  //   console.log('User signed up:', { username, email, phone, password, location });
-  //   Alert.alert('Sign up successful!');
-  //   router.replace('signIn'); // Redirect to sign-in page after successful sign-up
-  // };
+      if (data.address) {
+        return data.address.city || data.address.town || data.address.village || "Unknown City";
+      } else {
+        throw new Error("City not found in response.");
+      }
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const handleSignUp = async () => {
+    if (phoneNumber.length !== 10 || !/^[\d]+$/.test(phoneNumber)) {
+      setError("Phone number must be exactly 10 digits.");
+      return;
+    }
+
+    if (!city) {
+      setError("Location is required. Please enable location services.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const { data, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (authError) {
+        throw authError;
+      }
+
+      const user = data?.user;
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          display_name: username,
+        },
+      });
+
+      const { error: insertError } = await supabase.from("user").insert([
+        {
+          userId: user?.id,
+          userName: username,
+          email: user?.email,
+          phoneNumber: phoneNumber,
+          location: "Noida",
+        },
+      ]);
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      setSuccessMessage("Sign up successful! Redirecting...");
+      setTimeout(() => {
+        router.replace('/doctorPost'); 
+      }, 1500);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View className="p-6">
@@ -71,7 +145,7 @@ export default function signUp() {
         <TextInput
           placeholder="Phone Number"
           className="p-3 border border-gray-300 rounded-lg mt-1 bg-white"
-          onChangeText={(value) => setPhone(value)}
+          onChangeText={(value) => setPhoneNumber(value)}
           keyboardType="phone-pad"
         />
       </View>
@@ -100,15 +174,35 @@ export default function signUp() {
         <View className="mt-4">
           <Text className="text-base">Latitude: {location.latitude}</Text>
           <Text className="text-base">Longitude: {location.longitude}</Text>
+          <Text className="text-base">City: {city}</Text>
+        </View>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <View className="mt-4">
+          <Text className="text-base text-red-500">{error}</Text>
+        </View>
+      )}
+
+      {/* Success Message */}
+      {successMessage && (
+        <View className="mt-4">
+          <Text className="text-base text-green-500">{successMessage}</Text>
         </View>
       )}
 
       {/* Sign Up Button */}
       <TouchableOpacity
         className="p-4 bg-primary rounded-lg mt-8"
-        // onPress={handlesignUp}
+        onPress={handleSignUp}
+        disabled={loading}
       >
-        <Text className="text-sm text-white text-center">Sign Up</Text>
+        {loading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text className="text-sm text-white text-center">Sign Up</Text>
+        )}
       </TouchableOpacity>
 
       {/* Already have an account? Sign In */}

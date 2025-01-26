@@ -43,7 +43,7 @@ const HomeLayout = () => {
   }
 
   return (
-    <UserProvider>
+    <>
       <StatusBar style="light" backgroundColor="#22c55e" />
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -51,7 +51,7 @@ const HomeLayout = () => {
         <Stack.Screen name="(common)" options={{ headerShown: false }} />
         <Stack.Screen name="(root)" options={{ headerShown: false }} />
       </Stack>
-    </UserProvider>
+    </>
   );
 };
 

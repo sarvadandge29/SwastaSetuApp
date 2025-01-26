@@ -12,8 +12,10 @@ const RootLayout = () => {
   useEffect(() => {
     const fetchUserDetails = async () => {
       const userSession = await getLocalStorage('user');
-      const user = await getCurrentUser(userSession?.user_metadata?.sub);
-      updateCurrentUser(user);
+      if(userSession){
+        const user = await getCurrentUser(userSession?.user_metadata?.sub);
+        updateCurrentUser(user);
+      }
     };
 
     fetchUserDetails();

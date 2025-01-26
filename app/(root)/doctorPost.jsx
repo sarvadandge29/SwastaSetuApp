@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, SafeAreaView, ActivityIndicator, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { getCurrentUser, getLocalStorage, removeLocalStorage } from '../../service/Storage';
-import useStore from '../../service/store';
 import { supabase } from '../../utils/supabase/client';
-import DoctorCard from '../../components/DoctorCard'; // Import the Card component
+import DoctorCard from '../../components/DoctorCard'; 
 
 const DoctorPost = () => {
   const router = useRouter();
