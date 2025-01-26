@@ -12,47 +12,58 @@ export default function SignUp() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [location, setLocation] = useState({ latitude: null, longitude: null });
-  const [city, setCity] = useState('Noida');
+  const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
   const handleGetLocation = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission to access location was denied');
-      return;
-    }
-
-    let location = await Location.getCurrentPositionAsync({});
-    setLocation({
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-    });
-
     try {
-      const cityName = await reverseGeocode(location.latitude, location.longitude);
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Location permission required', 'Please enable location services to continue');
+        return;
+      }
+
+      setLoading(true);
+      const location = await Location.getCurrentPositionAsync({});
+      setLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+
+      const cityName = await reverseGeocode(location.coords.latitude, location.coords.longitude);
       setCity(cityName);
       Alert.alert('Location fetched successfully!');
     } catch (err) {
-      Alert.alert('Unable to fetch city name. Please try again.');
+      Alert.alert('Location Error', 'Unable to fetch location details. Please try again.');
+      console.error('Location error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const reverseGeocode = async (latitude, longitude) => {
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+        {
+          headers: {
+            'User-Agent': 'Your-App-Name' // IMPORTANT: Replace with your app name
+          }
+        }
       );
+      
+      if (!response.ok) throw new Error('Geocoding failed');
+      
       const data = await response.json();
-
-      if (data.address) {
-        return data.address.city || data.address.town || data.address.village || "Unknown City";
-      } else {
-        throw new Error("City not found in response.");
-      }
+      
+      // Enhanced location parsing for Greater Noida
+      const address = data.address || {};
+      return address.city || address.county || address.town || address.village || "Unknown Location";
     } catch (err) {
-      throw err;
+      console.error('Geocoding error:', err);
+      throw new Error('Failed to determine location');
     }
   };
 
@@ -94,7 +105,7 @@ export default function SignUp() {
           userName: username,
           email: user?.email,
           phoneNumber: phoneNumber,
-          location: "Noida",
+          location: city,
         },
       ]);
 
@@ -104,7 +115,7 @@ export default function SignUp() {
 
       setSuccessMessage("Sign up successful! Redirecting...");
       setTimeout(() => {
-        router.replace('/doctorPost'); 
+        router.replace('/doctorPost');
       }, 1500);
     } catch (err) {
       setError(err.message);
@@ -136,6 +147,7 @@ export default function SignUp() {
           placeholder="Email"
           className="p-3 border border-gray-300 rounded-lg mt-1 bg-white"
           onChangeText={(value) => setEmail(value)}
+          keyboardType='email-address'
         />
       </View>
 
