@@ -1,13 +1,25 @@
 import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../utils/supabase/client';
+import { setLocalStorage } from '../../service/Storage'; // Import local storage helper
 
 export default function SignIn() {
   const router = useRouter();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Auto-login if user data is stored
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const userData = await getLocalStorage('user');
+      if (userData) {
+        router.push('/doctorPost'); // Automatically navigate if logged in
+      }
+    };
+    checkLoginStatus();
+  }, []);
 
   const handleSignIn = async () => {
     try {
@@ -19,6 +31,8 @@ export default function SignIn() {
       if (error) {
         Alert.alert('Error', error.message);
       } else {
+        // Save user data to local storage
+        await setLocalStorage('user', data.user);
         Alert.alert('Success', 'You are signed in!');
         router.push('/doctorPost');
       }
