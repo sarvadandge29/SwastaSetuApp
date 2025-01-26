@@ -80,12 +80,12 @@ const PostDetails = () => {
       </Text>
 
       {/* Raised Amount */}
-      {/* <View className="flex-row justify-between items-center mb-4">
+      <View className="flex-row justify-between items-center mb-4">
         <Text className="text-sm font-semibold">
-          Raised: {post.currentAmount}{' '}
+          Raised: {post.content}{' '}
           <Text className="text-gray-600">of {post.targetAmount}</Text>
         </Text>
-      </View> */}
+      </View>
 
     </ScrollView>
   );

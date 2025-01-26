@@ -1,29 +1,37 @@
-import { View, Text, ActivityIndicator, ScrollView, Button } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../utils/supabase/client';
 
 const Inbox = () => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchAlerts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("alerts")
+        .select("*")
+        .order("id", { ascending: false });
+
+      if (error) throw error;
+
+      setAlerts(data || []);
+    } catch (error) {
+      console.error("Failed to fetch Alerts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("alerts")
-          .select("*")
-          .order("id", { ascending: false });
-
-        if (error) throw error;
-        setAlerts(data || []);
-      } catch (error) {
-        console.error("Failed to fetch Alerts:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAlerts();
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchAlerts();
+    setRefreshing(false);
   }, []);
 
   if (loading) {
@@ -41,9 +49,14 @@ const Inbox = () => {
         <Text className="text-2xl font-bold text-gray-900">Alerts</Text>
       </View>
       {/* Alerts List */}
-      <ScrollView className="flex-1 px-4 pt-4">
+      <ScrollView
+        className="flex-1 px-4 pt-4"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {alerts.map((alert) => (
-          <View 
+          <View
             key={alert.id}
             className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100"
           >
@@ -59,7 +72,7 @@ const Inbox = () => {
         ))}
       </ScrollView>
     </View>
-  )
-}
+  );
+};
 
-export default Inbox
+export default Inbox;

@@ -9,14 +9,14 @@ const DoctorCard = ({ title, content, imageLink, location, userName, onPress }) 
                     <Text className="text-lg font-bold">{title}</Text>
                 </View>
                 <View className="p-4">
-                    <Text className="text-gray-600">{content}</Text>
                     {imageLink && (
                         <Image
                             source={{ uri: imageLink }}
-                            className="w-full h-48 rounded-lg mt-4"
+                            className="w-full h-48 rounded-lg my-4"
                             resizeMode="contain"
                         />
                     )}
+                    <Text className="text-gray-600">{content}</Text>
                     <Text className="mt-4 text-sm text-gray-500">
                         <Text className="font-bold">Location:</Text> {location}
                     </Text>

@@ -6,6 +6,7 @@ const CommonLayout = () => {
         <Stack>
             <Stack.Screen name='profileEdit' options={{ headerShown: false }} />
             <Stack.Screen name='inbox' options={{ headerShown: false }} />
+            <Stack.Screen name='postDetails' options={{ headerShown: false }} />
         </Stack>
     )
 }
