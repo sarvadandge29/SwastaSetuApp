@@ -10,12 +10,11 @@ export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Auto-login if user data is stored
   useEffect(() => {
     const checkLoginStatus = async () => {
       const userData = await getLocalStorage('user');
       if (userData) {
-        router.push('/doctorPost'); // Automatically navigate if logged in
+        router.push('/doctorPost');
       }
     };
     checkLoginStatus();
@@ -31,7 +30,6 @@ export default function SignIn() {
       if (error) {
         Alert.alert('Error', error.message);
       } else {
-        // Save user data to local storage
         await setLocalStorage('user', data.user);
         Alert.alert('Success', 'You are signed in!');
         router.push('/doctorPost');
@@ -54,6 +52,7 @@ export default function SignIn() {
         <TextInput
           placeholder="Email"
           className="p-3 border border-gray-300 rounded-lg mt-1 bg-white"
+          keyboardType='email-address'
           onChangeText={(value) => setEmail(value)}
           value={email}
         />

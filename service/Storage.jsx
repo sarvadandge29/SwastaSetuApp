@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../utils/supabase/client';
 
 export const setLocalStorage = async (key, value) => {
   try {
@@ -25,3 +26,29 @@ export const removeLocalStorage = async () => {
     console.error('Error clearing local storage', error);
   }
 };
+
+export const getCurrentUser = async (userId) => {
+  try {
+    const { data: userDetails, error } = await supabase
+      .from("user")
+      .select("*")
+      .eq("userId", userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching user details', error.message);
+    }
+    // if (userDetails?.userType === "doctors") {
+    //   const { data: doctorDetails, error } = await supabase
+    //     .from("doctors")
+    //     .select("*")
+    //     .eq("userId", userId)
+    //     .single();
+
+    //   return doctorDetails;
+    // }
+    return userDetails;
+  } catch (error) {
+    console.error('Error fetching user', error.message);
+  }
+}

@@ -1,37 +1,73 @@
-import { View, Text, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { View, SafeAreaView, ActivityIndicator, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { removeLocalStorage } from '../../service/Storage'; // Use the correct function name
+import { getCurrentUser, getLocalStorage, removeLocalStorage } from '../../service/Storage';
+import useStore from '../../service/store';
+import { supabase } from '../../utils/supabase/client';
+import DoctorCard from '../../components/DoctorCard'; // Import the Card component
 
 const DoctorPost = () => {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState([]);
+  const [error, setError] = useState(null);
 
-  // Logout handler
-  const handleLogout = async () => {
-    try {
-      console.log('Attempting to log out...');
-      await removeLocalStorage(); // Clear the local storage
-      Alert.alert('Success', 'Logged out successfully!');
-      router.push('/signIn'); // Redirect to sign-in page
-    } catch (error) {
-      console.error('Logout Error:', error);
-      Alert.alert('Error', `An error occurred while logging out: ${error.message}`);
-    }
-  };
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("posts")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        setPosts(data || []);
+      } catch (error) {
+        setError("Failed to fetch posts.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text className="text-red-500">{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="items-center justify-center flex-1">
-        <Text className="text-xl font-bold">DoctorPost</Text>
-
-        {/* Logout Button */}
-        <TouchableOpacity
-          className="mt-6 p-4 bg-red-500 rounded-lg"
-          onPress={handleLogout}
-        >
-          <Text className="text-sm text-white text-center">Logout</Text>
-        </TouchableOpacity>
-      </View>
+      <ScrollView>
+        <View className="p-3">
+          {posts.map((post) => (
+            <DoctorCard
+              key={post.id}
+              title={post.title}
+              content={post.content}
+              imageLink={post.imageLink}
+              location={post.location}
+              userName={post.userName}
+              onPress={() => {
+                router.push({pathname :"/postDetails" , params:{id : post.id}})
+              }}
+            />
+          ))}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
