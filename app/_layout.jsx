@@ -3,7 +3,6 @@ import { useFonts } from 'expo-font';
 import { SplashScreen, Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import '../global.css';
-import { UserProvider } from '../context/UserContext';
 import { getLocalStorage } from '../service/Storage';
 
 const HomeLayout = () => {
