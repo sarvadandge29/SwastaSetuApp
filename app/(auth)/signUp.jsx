@@ -60,7 +60,7 @@ export default function SignUp() {
       
       // Enhanced location parsing for Greater Noida
       const address = data.address || {};
-      return address.city || address.county || address.town || address.village || "Unknown Location";
+      return address.county || address.state_district || address.village ||  address.state || "Unknown Location";
     } catch (err) {
       console.error('Geocoding error:', err);
       throw new Error('Failed to determine location');
